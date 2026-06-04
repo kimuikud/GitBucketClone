@@ -36,7 +36,7 @@ jobs:
 
             if [[ "$BRANCH_NAME" == Feature* ]] || [[ "$BRANCH_NAME" == Check* ]]; then
               echo "Deleting branch on Delete branch"
-              git push gitbucket --delete "$BRANCH_NAME" || echo "Branch not found, skip"
+              git push RemoteRepository --delete "$BRANCH_NAME" || echo "Branch not found, skip"
             else
               echo "Branch does not match delete conditions. Skip."
             fi
