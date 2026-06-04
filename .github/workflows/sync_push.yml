@@ -37,30 +37,30 @@ jobs:
         run: |
           git remote add RemoteRepository https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
 
-      # ✅ コピー先のリポジトリの最新取得
+      # コピー先のリポジトリの最新取得
       - name: Fetch RemoteRepository
         run: |
           git fetch RemoteRepository || echo "No remote yet"
 
-      # ✅ 差分チェック
+      # 差分チェック
       - name: Check diff
         id: diffcheck
         run: |
           git diff --quiet RemoteRepository/main HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
 
-      # ✅ 差分ありのときだけ履歴調整
+      # 差分ありのときだけ履歴調整
       - name: Rebase with RemoteRepository
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
           git pull --rebase RemoteRepository main || echo "No remote branch"
 
-      # ✅ 差分ありのときだけpush
+      # 差分ありのときだけpush
       - name: Push to RemoteRepository
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
           git push RemoteRepository main --force
 
-      # ✅ 差分なし
+      # 差分なし
       - name: Skip push (no changes)
         if: steps.diffcheck.outputs.no_changes == 'true'
         run: |

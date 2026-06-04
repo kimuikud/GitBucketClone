@@ -1,4 +1,4 @@
-name: Sync Delete to GitBucket
+name: Sync Delete to Remote Repository
 
 on:
   delete:
@@ -8,34 +8,34 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ checkout（GITHUB_TOKEN無効化）
+      # checkout（GITHUB_TOKEN無効化）
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
 
-      # ✅ Git設定
+      # Git設定
       - name: Set Git config
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "kimuikud"
+          git config --global user.email "kimuikud@fsi.co.jp"
 
-      # ✅ GitBucketリモート追加（←ここが修正箇所）
-      - name: Add GitBucket remote
+      # Remote Repository追加
+      - name: Add Remote Repository
         run: |
-          git remote add gitbucket https://${{ secrets.GITBUCKET_TOKEN }}@gitbucket.example.com/xxx.git
+          git remote add RemoteRepository https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
 
-      # ✅ 削除処理
-      - name: Delete branch on GitBucket
+      # 削除処理
+      - name: Delete branch on Remote Repository
         run: |
           if [[ "${{ github.event.ref_type }}" == "branch" ]]; then
             BRANCH_NAME="${{ github.event.ref }}"
 
             echo "Deleted branch: $BRANCH_NAME"
 
-            # ✅ 対象ブランチのみ削除
             if [[ "$BRANCH_NAME" == Feature* ]] || [[ "$BRANCH_NAME" == Check* ]]; then
-              echo "Deleting branch on GitBucket..."
+              echo "Deleting branch on Delete branch"
               git push gitbucket --delete "$BRANCH_NAME" || echo "Branch not found, skip"
             else
               echo "Branch does not match delete conditions. Skip."
