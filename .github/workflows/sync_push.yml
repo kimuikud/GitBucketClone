@@ -1,0 +1,63 @@
+
+name: Sync to GitBucket (Safe with Diff Check)
+
+on:
+  push:
+    branches:
+      - Developed
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ✅ checkout（GITHUB_TOKEN無効化）
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # ✅ Git設定
+      - name: Set Git config
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+
+      # ✅ workflow削除（GitHub制限対策）
+      - name: Remove workflow files
+        run: |
+          rm -rf .github/workflows
+
+      # ✅ GitBucket接続
+      - name: Add GitBucket remote
+        run: |
+          git remote add gitbucket https://${{ secrets.GITBUCKET_TOKEN }}@gitbucket.example.com/xxx.git
+
+      # ✅ GitBucket最新取得
+      - name: Fetch GitBucket
+        run: |
+          git fetch gitbucket || echo "No remote yet"
+
+      # ✅ 差分チェック
+      - name: Check diff
+        id: diffcheck
+        run: |
+          git diff --quiet gitbucket/Developed HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
+
+      # ✅ 差分ありのときだけ履歴調整
+      - name: Rebase with GitBucket
+        if: steps.diffcheck.outputs.no_changes == 'false'
+        run: |
+          git pull --rebase gitbucket Developed || echo "No remote branch"
+
+      # ✅ 差分ありのときだけpush
+      - name: Push to GitBucket
+        if: steps.diffcheck.outputs.no_changes == 'false'
+        run: |
+          git push gitbucket Developed --force-with-lease
+
+      # ✅ 差分なし
+      - name: Skip push (no changes)
+        if: steps.diffcheck.outputs.no_changes == 'true'
+        run: |
+          echo "No differences. Skipping push."

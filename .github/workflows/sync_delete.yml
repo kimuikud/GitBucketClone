@@ -1,0 +1,45 @@
+name: Sync Delete to GitBucket
+
+on:
+  delete:
+
+jobs:
+  sync-delete:
+    runs-on: ubuntu-latest
+
+    steps:
+      # ✅ checkout（GITHUB_TOKEN無効化）
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # ✅ Git設定
+      - name: Set Git config
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "actions@github.com"
+
+      # ✅ GitBucketリモート追加（←ここが修正箇所）
+      - name: Add GitBucket remote
+        run: |
+          git remote add gitbucket https://${{ secrets.GITBUCKET_TOKEN }}@gitbucket.example.com/xxx.git
+
+      # ✅ 削除処理
+      - name: Delete branch on GitBucket
+        run: |
+          if [[ "${{ github.event.ref_type }}" == "branch" ]]; then
+            BRANCH_NAME="${{ github.event.ref }}"
+
+            echo "Deleted branch: $BRANCH_NAME"
+
+            # ✅ 対象ブランチのみ削除
+            if [[ "$BRANCH_NAME" == Feature* ]] || [[ "$BRANCH_NAME" == Check* ]]; then
+              echo "Deleting branch on GitBucket..."
+              git push gitbucket --delete "$BRANCH_NAME" || echo "Branch not found, skip"
+            else
+              echo "Branch does not match delete conditions. Skip."
+            fi
+          else
+            echo "Not a branch delete event. Skip."
+          fi
