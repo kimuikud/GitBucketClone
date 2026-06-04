@@ -31,7 +31,7 @@ jobs:
       # ✅ コピー先のGitHub接続
       - name: Add GitHub remote
         run: |
-          git remote add github https://github.com/kimuikud/GitBucketClone.git
+          git remote add github https://${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
       # ✅ コピー先のGitHub最新取得
       - name: Fetch GitHub
         run: |
