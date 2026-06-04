@@ -1,4 +1,4 @@
-name: Sync Delete to Remote Repository
+name: Sync Delete to GitBucket
 
 on:
   delete:
@@ -21,22 +21,23 @@ jobs:
           git config --global user.name "kimuikud"
           git config --global user.email "kimuikud@fsi.co.jp"
 
-      # Remote Repository追加
-      - name: Add Remote Repository
+      # GitBucket追加
+      - name: Add GitBucket
         run: |
-          git remote add RemoteRepository https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
+          git remote add GitBucket https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
 
       # 削除処理
-      - name: Delete branch on Remote Repository
+      - name: Delete branch on GitBucket
         run: |
           if [[ "${{ github.event.ref_type }}" == "branch" ]]; then
             BRANCH_NAME="${{ github.event.ref }}"
 
             echo "Deleted branch: $BRANCH_NAME"
 
+            # 対象ブランチ（必要に応じて変更）
             if [[ "$BRANCH_NAME" == Feature* ]] || [[ "$BRANCH_NAME" == Check* ]]; then
-              echo "Deleting branch on Delete branch"
-              git push RemoteRepository --delete "$BRANCH_NAME" || echo "Branch not found, skip"
+              echo "Deleting branch on GitBucket"
+              git push GitBucket --delete "$BRANCH_NAME" || echo "Branch not found, skip"
             else
               echo "Branch does not match delete conditions. Skip."
             fi
