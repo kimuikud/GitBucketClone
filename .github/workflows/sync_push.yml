@@ -15,6 +15,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       # ✅ Git設定
@@ -54,7 +55,7 @@ jobs:
       - name: Push to GitBucket
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git push gitbucket Developed --force-with-lease
+          git push gitbucket Developed --force
 
       # ✅ 差分なし
       - name: Skip push (no changes)
