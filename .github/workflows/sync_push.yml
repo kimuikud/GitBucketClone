@@ -1,7 +1,7 @@
 
-name: Sync to Another Repository (Safe with Diff Check)
+name: Sync to Remote Repository (Safe with Diff Check)
 
-#ブランチ名はコピー元のブランチ名にすること
+#コピー元のブランチ名を記入する
 on:
   push:
     branches:
@@ -32,32 +32,33 @@ jobs:
           rm -rf .github/workflows
 
       # コピー先のリポジトリに接続
+      # トークン名とコピー先のurlを記入する
       - name: Add GitHub remote
         run: |
-          git remote add remoterepository https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
+          git remote add RemoteRepository https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
 
       # ✅ コピー先のリポジトリの最新取得
-      - name: Fetch remoterepository
+      - name: Fetch RemoteRepository
         run: |
-          git fetch remoterepository || echo "No remote yet"
+          git fetch RemoteRepository || echo "No remote yet"
 
       # ✅ 差分チェック
       - name: Check diff
         id: diffcheck
         run: |
-          git diff --quiet remoterepository/main HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
+          git diff --quiet RemoteRepository/main HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
 
       # ✅ 差分ありのときだけ履歴調整
-      - name: Rebase with remoterepository
+      - name: Rebase with RemoteRepository
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git pull --rebase remoterepository main || echo "No remote branch"
+          git pull --rebase RemoteRepository main || echo "No remote branch"
 
       # ✅ 差分ありのときだけpush
-      - name: Push to remoterepository
+      - name: Push to RemoteRepository
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git push remoterepository main --force
+          git push RemoteRepository main --force
 
       # ✅ 差分なし
       - name: Skip push (no changes)
