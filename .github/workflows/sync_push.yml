@@ -1,6 +1,7 @@
 
-name: Sync to GitBucketClone (Safe with Diff Check)
+name: Sync to Another Repository (Safe with Diff Check)
 
+#ブランチ名はコピー元のブランチ名にすること
 on:
   push:
     branches:
@@ -11,51 +12,52 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ checkout（GITHUB_TOKEN無効化）
+      # checkout（GITHUB_TOKEN無効化）
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           persist-credentials: false
 
-      # ✅ Git設定
+      # Git設定
+      # ユーザー名とEmailを記載する
       - name: Set Git config
         run: |
           git config --global user.name "kimuikud"
           git config --global user.email "kimuikud@fsi.co.jp"
 
-      # ✅ workflow削除（GitHub制限対策）
+      # workflow削除（GitHub制限対策）
       - name: Remove workflow files
         run: |
           rm -rf .github/workflows
 
-      # ✅ GitBucket接続
-      - name: Add GitBucket remote
+      # コピー先のリポジトリに接続
+      - name: Add GitHub remote
         run: |
-          git remote add gitbucket https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
+          git remote add remoterepository https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
 
-      # ✅ GitBucket最新取得
-      - name: Fetch GitBucket
+      # ✅ コピー先のリポジトリの最新取得
+      - name: Fetch remoterepository
         run: |
-          git fetch gitbucket || echo "No remote yet"
+          git fetch remoterepository || echo "No remote yet"
 
       # ✅ 差分チェック
       - name: Check diff
         id: diffcheck
         run: |
-          git diff --quiet gitbucket/main HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
+          git diff --quiet remoterepository/main HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
 
       # ✅ 差分ありのときだけ履歴調整
-      - name: Rebase with GitBucket
+      - name: Rebase with remoterepository
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git pull --rebase gitbucket main || echo "No remote branch"
+          git pull --rebase remoterepository main || echo "No remote branch"
 
       # ✅ 差分ありのときだけpush
-      - name: Push to GitBucket
+      - name: Push to remoterepository
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git push gitbucket main --force
+          git push remoterepository main --force
 
       # ✅ 差分なし
       - name: Skip push (no changes)
