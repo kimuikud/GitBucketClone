@@ -4,7 +4,7 @@ name: Sync to GitBucket (Safe with Diff Check)
 on:
   push:
     branches:
-      - Developed
+      - main
 
 jobs:
   sync:
@@ -41,19 +41,19 @@ jobs:
       - name: Check diff
         id: diffcheck
         run: |
-          git diff --quiet github/Developed HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
+          git diff --quiet github/main HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
 
       # ✅ 差分ありのときだけ履歴調整
       - name: Rebase with GitHub(clone)
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git pull --rebase github Developed || echo "No remote branch"
+          git pull --rebase github main || echo "No remote branch"
 
       # ✅ 差分ありのときだけpush
       - name: Push to GitHub(clone)
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git push github Developed --force-with-lease
+          git push github main --force-with-lease
 
       # ✅ 差分なし
       - name: Skip push (no changes)
