@@ -20,8 +20,8 @@ jobs:
       # ✅ Git設定
       - name: Set Git config
         run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
+          git config --global user.name "kimuikud"
+          git config --global user.email "kimuikud@fsi.co.jp"
 
       # ✅ workflow削除（GitHub制限対策）
       - name: Remove workflow files
@@ -31,7 +31,7 @@ jobs:
       # ✅ GitBucket接続
       - name: Add GitBucket remote
         run: |
-          git remote add gitbucket https://${{ secrets.GITBUCKET_TOKEN }}@gitbucket.example.com/xxx.git
+          git remote add gitbucket https://cibotium1003u.platon.fsi.co.jp/gitbucket/git/kimuikud/TestYamlKimuikud.git
 
       # ✅ GitBucket最新取得
       - name: Fetch GitBucket
