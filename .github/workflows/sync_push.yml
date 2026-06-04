@@ -1,10 +1,10 @@
 
-name: Sync to GitBucket (Safe with Diff Check)
+name: Sync to GitBucketClone (Safe with Diff Check)
 
 on:
   push:
     branches:
-      - Developed
+      - main
 
 jobs:
   sync:
@@ -32,7 +32,7 @@ jobs:
       # ✅ GitBucket接続
       - name: Add GitBucket remote
         run: |
-          git remote add gitbucket https://${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
+          git remote add gitbucket https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
 
       # ✅ GitBucket最新取得
       - name: Fetch GitBucket
@@ -43,19 +43,19 @@ jobs:
       - name: Check diff
         id: diffcheck
         run: |
-          git diff --quiet gitbucket/Developed HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
+          git diff --quiet gitbucket/main HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
 
       # ✅ 差分ありのときだけ履歴調整
       - name: Rebase with GitBucket
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git pull --rebase gitbucket Developed || echo "No remote branch"
+          git pull --rebase gitbucket main || echo "No remote branch"
 
       # ✅ 差分ありのときだけpush
       - name: Push to GitBucket
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git push gitbucket Developed --force
+          git push gitbucket main --force
 
       # ✅ 差分なし
       - name: Skip push (no changes)
