@@ -4,7 +4,7 @@ name: Sync to GitBucket (Safe with Diff Check)
 on:
   push:
     branches:
-      - main
+      - Developed
 
 jobs:
   sync:
@@ -28,32 +28,33 @@ jobs:
         run: |
           rm -rf .github/workflows
 
-      # ✅ コピー先のGitHub接続
-      - name: Add GitHub remote
+      # ✅ GitBucket接続
+      - name: Add GitBucket remote
         run: |
-          git remote add github https://x-access-token:${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
-      # ✅ コピー先のGitHub最新取得
-      - name: Fetch GitHub
+          git remote add gitbucket https://${{ secrets.GITBUCKET_TOKEN }}@github.com/kimuikud/GitBucketClone.git
+
+      # ✅ GitBucket最新取得
+      - name: Fetch GitBucket
         run: |
-          git fetch github || echo "No remote yet"
+          git fetch gitbucket || echo "No remote yet"
 
       # ✅ 差分チェック
       - name: Check diff
         id: diffcheck
         run: |
-          git diff --quiet github/main HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
+          git diff --quiet gitbucket/Developed HEAD && echo "no_changes=true" >> $GITHUB_OUTPUT || echo "no_changes=false" >> $GITHUB_OUTPUT
 
       # ✅ 差分ありのときだけ履歴調整
-      - name: Rebase with GitHub(clone)
+      - name: Rebase with GitBucket
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git pull --rebase github main || echo "No remote branch"
+          git pull --rebase gitbucket Developed || echo "No remote branch"
 
       # ✅ 差分ありのときだけpush
-      - name: Push to GitHub(clone)
+      - name: Push to GitBucket
         if: steps.diffcheck.outputs.no_changes == 'false'
         run: |
-          git push github main --force-with-lease
+          git push gitbucket Developed --force-with-lease
 
       # ✅ 差分なし
       - name: Skip push (no changes)
